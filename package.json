@@ -1,6 +1,6 @@
 {
-  "name": "react-native-image-generator",
-  "version": "0.3.1",
+  "name": "@spicysparks/react-native-image-generator",
+  "version": "0.3.2",
   "description": "Library for generate images from other images",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -36,13 +36,13 @@
     "ios",
     "android"
   ],
-  "repository": "https://github.com/evgenusov/react-native-image-generator",
+  "repository": "https://github.com/Spicy-Sparks/react-native-image-generator",
   "author": "Evgeny Usov <evgenusov96@gmail.com> (https://github.com/evgenusov)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/evgenusov/react-native-image-generator/issues"
+    "url": "https://github.com/Spicy-Sparks/react-native-image-generator/issues"
   },
-  "homepage": "https://github.com/evgenusov/react-native-image-generator#readme",
+  "homepage": "https://github.com/Spicy-Sparks/react-native-image-generator#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
