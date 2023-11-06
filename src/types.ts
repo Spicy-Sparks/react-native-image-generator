@@ -4,6 +4,9 @@ export interface IPictureLayer {
   height: number;
   x: number;
   y: number;
+  skewX?: number;
+  skewY?: number;
+  radius?: number;
 }
 
 export interface ITextLayer {
@@ -15,12 +18,13 @@ export interface ITextLayer {
   height: number;
   x: number;
   y: number;
+  bold?: boolean;
 }
 
 export type ILayer = IPictureLayer | ITextLayer;
 
 export interface IConfig {
-  filename: string;
+  filePath: string;
   width: number;
   height: number;
   base64?: boolean;
