@@ -146,7 +146,7 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
       val blue = colorArray[2].toInt()
       paint.color = Color.argb(alpha, red, green, blue)
     } else {
-      paint.color = Color.RED
+      paint.color = Color.WHITE
     }
 
     val padding = layer.x
