@@ -18,6 +18,7 @@ export interface ITextLayer {
   height: number;
   x: number;
   y: number;
+  maxLines: number;
   bold?: boolean;
 }
 

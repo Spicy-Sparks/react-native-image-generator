@@ -33,13 +33,14 @@ class ImageGenerator: NSObject {
     }
     
     func getImageByUri(uri: String) -> UIImage? {
-        if(uri.contains("http")) {
-            let url = URL(string: uri);
-            let data = try? Data(contentsOf: url!)
-            return UIImage(data: data!);
+        if uri.contains("http"), let url = URL(string: uri), let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
+            return image
+        } else if let localImage = UIImage(named: uri) {
+            return localImage
         } else {
-            return UIImage(named: uri)
+            return nil
         }
+
     }
     
     func drawPictureLayer(layer: PictureLayer) {
@@ -50,22 +51,29 @@ class ImageGenerator: NSObject {
 
             let scaleX = 1.0 / cos(layer.skewY * .pi / 180)
             let scaleY = 1.0 / cos(layer.skewX * .pi / 180)
-            
+
             UIGraphicsBeginImageContextWithOptions(radiusedImage!.size, false, radiusedImage!.scale)
-            
+
             if let context = UIGraphicsGetCurrentContext() {
                 context.scaleBy(x: scaleX, y: scaleY)
                 skewedImage?.draw(at: .zero)
-                let restoredImage = UIGraphicsGetImageFromCurrentImageContext()
-                UIGraphicsEndImageContext()
 
-                restoredImage?.draw(in: CGRect(
-                    origin: CGPoint(x: CGFloat(layer.x), y: CGFloat(layer.y)),
-                    size: CGSize(width: CGFloat(layer.width), height: CGFloat(layer.height))
-                ))
+                if let restoredImage = UIGraphicsGetImageFromCurrentImageContext() {
+                    UIGraphicsEndImageContext()
+
+                    restoredImage.draw(in: CGRect(
+                        origin: CGPoint(x: CGFloat(layer.x), y: CGFloat(layer.y)),
+                        size: CGSize(width: CGFloat(layer.width), height: CGFloat(layer.height))
+                    ))
+                } else {
+                    UIGraphicsEndImageContext()
+                }
+            } else {
+                UIGraphicsEndImageContext()
             }
         }
     }
+
     
     func drawTextLayer(layer: TextLayer) {
         let textColor = UIColor(
