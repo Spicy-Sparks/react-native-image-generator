@@ -17,10 +17,12 @@ data class TextLayer(
   var text: String,
   var fontSize: Double?,
   var fontFamily: String?,
-  var color: ArrayList<Double>,
+  var color: String,
+  var opacity: Double?,
   var width: Double,
   var height: Double,
   var x: Double,
   var y: Double,
-  var maxLines: Double
+  var maxLines: Double,
+  var alignment: String?
 ) : Layer

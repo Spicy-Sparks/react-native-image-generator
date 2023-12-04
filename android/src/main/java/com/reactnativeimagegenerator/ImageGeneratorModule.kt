@@ -45,20 +45,21 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
     } else {
       try {
         @Suppress("UNCHECKED_CAST")
-        val colorArray = data["color"] as ArrayList<Double>
         TextLayer(
           data["text"] as String,
-          data["fontSize"] as Double?,
-          data["fontFamily"] as String?,
-          colorArray,
+          (data["fontSize"] as Double?) ?: 0.0,
+          (data["fontFamily"] as String?) ?: "",
+          data["color"] as String,
+          (data["opacity"] as Double?) ?: 1.0,
           data["width"] as Double,
           data["height"] as Double,
           data["x"] as Double,
           data["y"] as Double,
-          data["maxLines"] as Double
+          data["maxLines"] as Double,
+          (data["alignment"] as String?) ?: "center"
         )
       } catch (e: Exception) {
-        TextLayer("", 0.0, null, arrayListOf(0.0), 0.0, 0.0, 0.0, 0.0, 0.0)
+        TextLayer("", 0.0, null, "#FFFFFF", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, "center")
       }
     }
   }
@@ -138,24 +139,31 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
     val typeface = Typeface.createFromAsset(reactApplicationContext.assets, "fonts/${layer.fontFamily}.ttf")
     paint.typeface = typeface
 
-    val colorArray = layer.color
-    if (colorArray.size == 4) {
-      val alpha = (colorArray[3] * 255).toInt()
-      val red = colorArray[0].toInt()
-      val green = colorArray[1].toInt()
-      val blue = colorArray[2].toInt()
-      paint.color = Color.argb(alpha, red, green, blue)
-    } else {
-      paint.color = Color.WHITE
-    }
+    val rgbColor = hexToRgb(layer.color)
+    val alpha = ((layer.opacity ?: 1.0) * 255).toInt()
+    val red = rgbColor[0]
+    val green = rgbColor[1]
+    val blue = rgbColor[2]
+    paint.color = Color.argb(alpha, red, green, blue)
 
     val padding = layer.x
     val textWidth = layer.width.toFloat() - padding
 
+    val alignment =
+      if (layer.alignment == "center") {
+        Layout.Alignment.ALIGN_CENTER
+      } else if (layer.alignment == "left") {
+        Layout.Alignment.ALIGN_NORMAL
+      } else if (layer.alignment == "right") {
+        Layout.Alignment.ALIGN_OPPOSITE
+      } else {
+        Layout.Alignment.ALIGN_CENTER
+      }
+
     var staticLayout =
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         StaticLayout.Builder.obtain(layer.text, 0, layer.text.length, paint, textWidth.toInt())
-          .setAlignment(Layout.Alignment.ALIGN_CENTER)
+          .setAlignment(alignment)
           .setLineSpacing(0f, 1f)
           .setIncludePad(false)
           .build()
@@ -165,7 +173,7 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
           layer.text,
           paint,
           textWidth.toInt(),
-          Layout.Alignment.ALIGN_CENTER,
+          alignment,
           1f,
           0f,
           false
@@ -183,7 +191,7 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
             paint,
             textWidth.toInt()
           )
-            .setAlignment(Layout.Alignment.ALIGN_CENTER)
+            .setAlignment(alignment)
             .setLineSpacing(0f, 1f)
             .setIncludePad(false)
             .build()
@@ -193,7 +201,7 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
             truncatedText,
             paint,
             textWidth.toInt(),
-            Layout.Alignment.ALIGN_CENTER,
+            alignment,
             1f,
             0f,
             false
@@ -243,6 +251,20 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
     outputStream?.close()
 
     return "file://$filePath"
+  }
+
+  private fun hexToRgb(hex: String): List<Int> {
+    val regex = Regex("^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$", RegexOption.IGNORE_CASE)
+    val matchResult = regex.find(hex)
+
+    if (matchResult != null) {
+      val r = matchResult.groupValues[1].toIntOrNull(16) ?: 255
+      val g = matchResult.groupValues[2].toIntOrNull(16) ?: 255
+      val b = matchResult.groupValues[3].toIntOrNull(16) ?: 255
+      return listOf(r, g, b)
+    } else {
+      return listOf(255, 255, 255)
+    }
   }
 
   @ReactMethod

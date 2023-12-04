@@ -2,23 +2,30 @@ protocol Layer {}
 
 class PictureLayer: Layer {
     var uri: String
-    var width: Float
-    var height: Float
-    var x: Float
-    var y: Float
-    var skewX: CGFloat
-    var skewY: CGFloat
-    var radius: CGFloat
+    var width: Double
+    var height: Double
+    var x: Double
+    var y: Double
+    var skewX: Double?
+    var skewY: Double?
+    var radius: Double?
 
-    init(uri: String, width: Float, height: Float, x: Float, y: Float, skewX: CGFloat = 0, skewY: CGFloat = 0, radius: CGFloat = 0) {
+    init(uri: String,
+         width: Double,
+         height: Double,
+         x: Double,
+         y: Double,
+         skewX: Double?,
+         skewY: Double?,
+         radius: Double?) {
         self.uri = uri
         self.width = width
         self.height = height
         self.x = x
         self.y = y
-        self.skewX = skewX
-        self.skewY = skewY
-        self.radius = radius
+        self.skewX = skewX ?? 0.0
+        self.skewY = skewY ?? 0.0
+        self.radius = radius ?? 0.0
     }
 }
 
@@ -26,33 +33,39 @@ class PictureLayer: Layer {
 
 class TextLayer : Layer {
     var text: String
-    var fontSize: Int
-    var fontFamily: String
-    var color: [Float]
-    var width: Float
-    var height: Float
-    var x: Float
-    var y: Float
-    var bold: Bool
+    var fontSize: Int?
+    var fontFamily: String?
+    var color: String
+    var opacity: Double?
+    var width: Double
+    var height: Double
+    var x: Double
+    var y: Double
+    var alignment: String?
+    var bold: Bool?
     
     
     init(text: String,
          fontSize: Int,
-         width: Float,
-         height: Float,
-         x: Float,
-         y: Float,
+         width: Double,
+         height: Double,
+         x: Double,
+         y: Double,
          fontFamily: String?,
-         color: [Float]?,
-         bold: Bool = false) {
+         color: String,
+         opacity: Double?,
+         alignment: String?,
+         bold: Bool?) {
         self.text = text;
         self.fontSize = fontSize;
         self.fontFamily = fontFamily ?? "Helvetica";
-        self.color = color ?? [255, 255, 255, 1];
+        self.color = color;
+        self.opacity = opacity ?? 1.0;
         self.width = width;
         self.height = height;
         self.x = x;
         self.y = y;
-        self.bold = bold
+        self.alignment = alignment ?? "center";
+        self.bold = bold ?? false;
     }
 }
