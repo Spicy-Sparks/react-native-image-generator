@@ -9,14 +9,13 @@ export interface IPictureLayer {
   radius?: number;
 }
 
-export type Color = [number, number, number];
 export type Alignment = 'left' | 'center' | 'right';
 
 export interface ITextLayer {
   text: string;
   fontSize?: number;
   fontFamily?: string;
-  color: Color;
+  color: string;
   opacity?: number;
   width: number;
   height: number;
