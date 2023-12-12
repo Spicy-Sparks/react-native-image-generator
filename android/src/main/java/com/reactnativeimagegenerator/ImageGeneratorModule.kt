@@ -17,6 +17,10 @@ import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.net.URL
 import kotlin.math.tan
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 123
 
@@ -267,37 +271,50 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
     }
   }
 
-  @ReactMethod
-  fun generate(layersData: ReadableMap, config: ReadableMap, promise: Promise) {
-    try {
+  private val lock = Any()
+
+  private fun generateImage(layersData: ReadableMap, config: ReadableMap): String {
+    return synchronized(lock) {
       val layers = layersData.getArray("layers")
       val width = config.getInt("width")
       val height = config.getInt("height")
       val filePath = config.getString("filePath")
-      val base64: Boolean =
-        if (config.hasKey("base64")) {
-          config.getBoolean("base64")
-        } else {
-          false
-        }
+      val base64: Boolean = config.hasKey("base64") && config.getBoolean("base64")
+
       val bgBitMapConfig = Bitmap.Config.ARGB_8888
       val bgBitmap = Bitmap.createBitmap(width, height, bgBitMapConfig)
       val canvas = Canvas(bgBitmap)
+
       if (layers != null) {
         @Suppress("UNCHECKED_CAST")
         for (item in layers.toArrayList()) drawLayer(canvas, createLayer(item as Map<String, Any>))
       }
-      if (base64) {
+
+      return if (base64) {
         val baos = ByteArrayOutputStream()
         bgBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-        val result = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
-        promise.resolve("data:image/png;base64,$result")
+        "data:image/png;base64," + Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
       } else {
-        val result = filePath?.let { saveBitmap(bgBitmap, it) }
-        promise.resolve(result)
+        filePath?.let { saveBitmap(bgBitmap, it) }?.toString() ?: ""
       }
-    } catch (e: Exception) {
-      promise.reject("Error generating image: ", e.stackTraceToString())
+    }
+  }
+
+  @ReactMethod
+  fun generate(layersData: ReadableMap, config: ReadableMap, promise: Promise) {
+    CoroutineScope(Dispatchers.IO).launch {
+      try {
+        val result = withContext(Dispatchers.Default) {
+          generateImage(layersData, config)
+        }
+        withContext(Dispatchers.Main) {
+          promise.resolve(result)
+        }
+      } catch (e: Exception) {
+        withContext(Dispatchers.Main) {
+          promise.reject("Error generating image: ", e.stackTraceToString())
+        }
+      }
     }
   }
 }
