@@ -254,7 +254,7 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
     bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
     outputStream?.close()
 
-    return "file://$filePath"
+    return filePath
   }
 
   private fun hexToRgb(hex: String): List<Int> {
