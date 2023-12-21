@@ -231,20 +231,6 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
   }
 
   private fun saveBitmap(bitmap: Bitmap, filePath: String): String {
-    if (ContextCompat.checkSelfPermission(
-        reactApplicationContext,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-      ) != PackageManager.PERMISSION_GRANTED
-    ) {
-      reactApplicationContext.currentActivity?.let {
-        ActivityCompat.requestPermissions(
-          it,
-          arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-          WRITE_EXTERNAL_STORAGE_REQUEST_CODE
-        )
-      }
-    }
-
     var uri = Uri.parse(filePath)
     if (uri.scheme == null) {
       uri = Uri.parse("file://$filePath")
