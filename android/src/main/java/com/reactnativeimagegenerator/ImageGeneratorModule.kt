@@ -1,8 +1,6 @@
 package com.reactnativeimagegenerator
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.pm.PackageManager
 import android.graphics.*
 import android.net.Uri
 import android.os.Build
@@ -10,8 +8,6 @@ import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.util.Base64
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.facebook.react.bridge.*
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
@@ -21,8 +17,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-private const val WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 123
 
 class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
@@ -93,6 +87,8 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
         getSkewedBitmap(roundedBitmap, layer.skewX, layer.skewY)
       }
 
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
     canvas.drawBitmap(
       finalBitmap,
       null,
@@ -102,7 +98,7 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
         (layer.x + layer.width).toInt(),
         (layer.y + layer.height).toInt()
       ),
-      null
+      paint
     )
   }
 
@@ -110,11 +106,10 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
     val output = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(output)
 
-    val paint = Paint()
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     val rect = Rect(0, 0, bitmap.width, bitmap.height)
     val rectF = RectF(rect)
 
-    paint.isAntiAlias = true
     canvas.drawARGB(0, 0, 0, 0)
     canvas.drawRoundRect(rectF, radius, radius, paint)
     paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
@@ -290,14 +285,12 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
   fun generate(layersData: ReadableMap, config: ReadableMap, promise: Promise) {
     CoroutineScope(Dispatchers.IO).launch {
       try {
-        val result = withContext(Dispatchers.Default) {
-          generateImage(layersData, config)
-        }
-        withContext(Dispatchers.Main) {
+        withContext(Dispatchers.Default) {
+          val result = generateImage(layersData, config)
           promise.resolve(result)
         }
       } catch (e: Exception) {
-        withContext(Dispatchers.Main) {
+        withContext(Dispatchers.Default) {
           promise.reject("Error generating image: ", e.stackTraceToString())
         }
       }
