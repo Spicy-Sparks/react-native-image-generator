@@ -1,6 +1,6 @@
 {
   "name": "@spicysparks/react-native-image-generator",
-  "version": "0.3.9",
+  "version": "0.4.0",
   "description": "Library for generate images from other images",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
