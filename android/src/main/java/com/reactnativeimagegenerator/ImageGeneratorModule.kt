@@ -232,7 +232,9 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
     }
     val outputStream: OutputStream? = reactApplicationContext.contentResolver
       .openOutputStream(uri, if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) "w" else "rwt")
-    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+    if (outputStream != null) {
+      bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+    }
     outputStream?.close()
 
     return filePath
