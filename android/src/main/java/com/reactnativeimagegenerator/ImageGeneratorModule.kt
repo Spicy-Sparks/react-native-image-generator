@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
@@ -62,16 +63,34 @@ class ImageGeneratorModule(reactContext: ReactApplicationContext) : ReactContext
     }
   }
 
-  private fun getBitmapForLayer(layer: PictureLayer): Bitmap {
+  private fun getBitmapForLayer(layer: PictureLayer?): Bitmap {
+    if (layer == null || layer.uri.isNullOrEmpty()) {
+      return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+    }
+
     return try {
-      if ("http" in layer.uri) {
-        val url = URL(layer.uri)
-        BitmapFactory.decodeStream(url.openConnection().getInputStream())
-      } else {
-        @SuppressLint("DiscouragedApi")
-        val resId = reactApplicationContext.resources.getIdentifier(layer.uri, "mipmap", reactApplicationContext.packageName)
-        BitmapFactory.decodeResource(reactApplicationContext.resources, resId)
+      val bitmap: Bitmap = when {
+        layer.uri.startsWith("http") -> {
+          val url = URL(layer.uri)
+          BitmapFactory.decodeStream(url.openConnection().getInputStream())
+        }
+        layer.uri.startsWith("file") -> {
+          val uri = Uri.parse(layer.uri)
+          val path = uri.path ?: ""
+          val file = File(path)
+          if (file.exists()) {
+            BitmapFactory.decodeFile(path)
+          } else {
+            Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+          }
+        }
+        else -> {
+          @SuppressLint("DiscouragedApi")
+          val resId = reactApplicationContext.resources.getIdentifier(layer.uri, "mipmap", reactApplicationContext.packageName)
+          BitmapFactory.decodeResource(reactApplicationContext.resources, resId)
+        }
       }
+      bitmap
     } catch (e: Exception) {
       Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
     }
